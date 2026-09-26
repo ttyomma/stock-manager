@@ -1,0 +1,15 @@
+{
+  "name": "stock-manager",
+  "version": "1.0.0",
+  "description": "Warehouse management system",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^18.0.4",
+    "express": "^5.2.1",
+    "pg": "^8.23.0"
+  }
+}

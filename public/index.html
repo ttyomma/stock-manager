@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Stock Manager</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="style.css">
+</head>
+<body>
+	<main class="container-fluid dashboard-shell">
+		<header class="topbar">
+			<div>
+				<p class="eyebrow">Складський облік</p>
+				<h1>Огляд запасів</h1>
+			</div>
+			<div class="topbar-actions">
+				<a class="btn page-nav-button" href="reports.html">Звіти <span aria-hidden="true">→</span></a>
+				<button class="btn btn-dark refresh-button" id="refresh-button" type="button"><span aria-hidden="true">↻</span> Оновити дані</button>
+			</div>
+		</header>
+
+		<section class="metrics-grid" aria-label="Ключові показники">
+			<article class="metric-card">
+				<span class="metric-label">Позицій у каталозі</span>
+				<strong class="metric-value" id="product-count">—</strong>
+				<span class="metric-note">активних товарів</span>
+			</article>
+			<article class="metric-card metric-card-accent">
+				<span class="metric-label">Одиниць на складі</span>
+				<strong class="metric-value" id="stock-count">—</strong>
+				<span class="metric-note">загальний залишок</span>
+			</article>
+			<article class="metric-card">
+				<span class="metric-label">Вартість запасів</span>
+				<strong class="metric-value" id="inventory-value">—</strong>
+				<span class="metric-note">за закупівельними цінами</span>
+			</article>
+			<article class="metric-card metric-card-warning metric-card-action" id="low-stock-card" role="button" tabindex="0" aria-pressed="false">
+				<span class="metric-label">Потребують уваги</span>
+				<strong class="metric-value" id="low-stock-count">—</strong>
+				<span class="metric-note">позицій із залишком до 10</span>
+			</article>
+		</section>
+
+		<section class="financial-report dashboard-financial" aria-label="Фінансові показники">
+			<div><span>Загальна виручка</span><strong id="total-revenue">—</strong></div>
+			<div><span>Оформлено покупок</span><strong id="sale-count">—</strong></div>
+			<div><span>Середній чек</span><strong id="average-check">—</strong></div>
+		</section>
+
+		<section class="inventory-panel table-workspace" aria-labelledby="inventory-title">
+			<div class="panel-heading">
+				<div>
+					<p class="eyebrow">Каталог</p>
+					<h2 id="inventory-title">Товари на складі</h2>
+				</div>
+				<div class="table-switcher" role="tablist" aria-label="Таблиці каталогу">
+					<button class="switcher-button is-active" type="button" data-table-view="inventory" role="tab" aria-selected="true">Товари на складі</button>
+					<button class="switcher-button" type="button" data-table-view="suppliers" role="tab" aria-selected="false">Товари та постачальники</button>
+				</div>
+				<div class="panel-actions">
+					<label class="search-field">
+						<span class="visually-hidden">Пошук товару</span>
+						<span aria-hidden="true">⌕</span>
+						<input id="search-input" type="search" placeholder="Пошук товару..." autocomplete="off">
+					</label>
+					<button class="btn btn-success add-button" id="add-product-button" type="button">+ Додати товар</button>
+					<button class="btn btn-outline-success add-button" id="add-supplier-button" type="button">+ Постачальник</button>
+				</div>
+			</div>
+
+			<div id="inventory-view" class="table-view is-visible" role="tabpanel">
+			<div id="table-status" class="table-status" role="status">Завантаження даних...</div>
+			<div class="table-responsive">
+				<table class="table inventory-table align-middle mb-0">
+					<thead>
+						<tr>
+							<th scope="col" aria-sort="ascending"><button class="sort-button is-active" type="button" data-sort="product_id">ID <span aria-hidden="true">↑</span></button></th>
+							<th scope="col">Назва товару</th>
+							<th scope="col">Категорія</th>
+							<th scope="col" class="text-end" aria-sort="none"><button class="sort-button" type="button" data-sort="purchase_price">Закупівля <span aria-hidden="true">↕</span></button></th>
+							<th scope="col" class="text-end" aria-sort="none"><button class="sort-button" type="button" data-sort="sale_price">Продаж <span aria-hidden="true">↕</span></button></th>
+							<th scope="col" class="text-end" aria-sort="none"><button class="sort-button" type="button" data-sort="stock_quantity">Залишок <span aria-hidden="true">↕</span></button></th>
+							<th scope="col" class="text-end">Дії</th>
+						</tr>
+					</thead>
+					<tbody id="products-table-body"></tbody>
+				</table>
+			</div>
+			</div>
+			<div id="suppliers-view" class="table-view" role="tabpanel" hidden>
+				<div id="supplier-preview-status" class="table-status" role="status"></div>
+				<div class="table-responsive"><table class="table inventory-table supplier-main-table mb-0"><thead><tr><th>Товар</th><th>Постачальник</th><th>Контактна особа</th><th>Телефон</th><th class="text-end">Залишок</th></tr></thead><tbody id="supplier-preview-body"></tbody></table></div>
+			</div>
+		</section>
+	</main>
+
+	<dialog class="product-dialog" id="product-dialog">
+		<form id="product-form" method="dialog">
+			<div class="dialog-heading">
+				<div>
+					<p class="eyebrow">Каталог</p>
+					<h2 id="form-title">Новий товар</h2>
+				</div>
+				<button class="dialog-close" id="close-dialog-button" type="button" aria-label="Закрити">×</button>
+			</div>
+			<input id="product-id" type="hidden">
+			<div class="form-grid">
+				<label>Постачальник<select id="supplier-id" required></select></label>
+				<label>Назва товару<input id="product-name" type="text" maxlength="150" required></label>
+				<label>Категорія<input id="category" type="text" maxlength="50" required></label>
+				<label>Закупівельна ціна<input id="purchase-price" type="number" min="0" step="0.01" required></label>
+				<label>Ціна продажу<input id="sale-price" type="number" min="0" step="0.01" required></label>
+				<label>Залишок<input id="stock-quantity" type="number" min="0" step="1" required></label>
+			</div>
+			<p class="form-error" id="form-error" role="alert"></p>
+			<div class="dialog-actions">
+				<button class="btn btn-light" id="cancel-dialog-button" type="button">Скасувати</button>
+				<button class="btn btn-dark" type="submit">Зберегти товар</button>
+			</div>
+		</form>
+	</dialog>
+
+	<dialog class="product-dialog" id="supplier-dialog">
+		<form id="supplier-form" method="dialog">
+			<div class="dialog-heading"><div><p class="eyebrow">Довідник</p><h2>Новий постачальник</h2></div><button class="dialog-close" id="close-supplier-button" type="button" aria-label="Закрити">×</button></div>
+			<div class="form-grid"><label>Назва компанії<input id="company-name" type="text" maxlength="100" required></label><label>Телефон<input id="supplier-phone" type="text" maxlength="20" required></label><label>Контактна особа<input id="contact-person" type="text" maxlength="100" required></label></div>
+			<p class="form-error" id="supplier-form-error" role="alert"></p>
+			<div class="dialog-actions"><button class="btn btn-light" id="cancel-supplier-button" type="button">Скасувати</button><button class="btn btn-dark" type="submit">Зберегти</button></div>
+		</form>
+	</dialog>
+
+	<script src="app.js"></script>
+</body>
+</html>
