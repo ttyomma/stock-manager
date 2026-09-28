@@ -123,19 +123,19 @@ app.get("/api/reports/sales/:id", async (req, res) => {
 	try {
 		const saleResult = await pool.query(
 			`SELECT sale_id, customer_name, sale_date, total_amount
-			 FROM trade.sale WHERE sale_id = $1`,
+			FROM trade.sale WHERE sale_id = $1`,
 			[req.params.id],
 		);
 		if (!saleResult.rowCount) return res.status(404).json({ error: "Чек не знайдено" });
 
 		const itemsResult = await pool.query(
 			`SELECT si.sale_item_id, si.product_id, p.product_name, p.category,
-			        si.quantity, si.unit_price,
+			si.quantity, si.unit_price,
 			        (si.quantity * si.unit_price)::numeric(12, 2) AS line_total
-			 FROM trade.sale_item si
-			 JOIN trade.product p ON p.product_id = si.product_id
-			 WHERE si.sale_id = $1
-			 ORDER BY si.sale_item_id ASC`,
+			FROM trade.sale_item si
+			JOIN trade.product p ON p.product_id = si.product_id
+			WHERE si.sale_id = $1
+			ORDER BY si.sale_item_id ASC`,
 			[req.params.id],
 		);
 		res.json({ sale: saleResult.rows[0], items: itemsResult.rows });
